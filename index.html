@@ -402,7 +402,7 @@
   .lightbox {
     position: fixed;
     inset: 0;
-    background: rgba(6,8,18,0.88);
+    background: rgba(6,8,18,0.92);
     z-index: 40;
     opacity: 0;
     pointer-events: none;
@@ -410,14 +410,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+    padding: 10px;
   }
   .lightbox.show { opacity: 1; pointer-events: auto; }
 
   .lightbox-img {
-    width: 100%;
-    max-width: 420px;
-    aspect-ratio: 9 / 16;
+    width: auto;
+    max-width: 100%;
+    max-height: 100%;
     background: var(--bg-elevated);
     border: 1px solid var(--line);
     border-radius: 16px;
@@ -430,7 +430,27 @@
     font-size: 13px;
     font-weight: 600;
     text-align: center;
+  }
+  .lightbox-img.has-image {
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+  .lightbox-img.empty {
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 9 / 16;
     padding: 20px;
+  }
+  .lightbox-img img {
+    display: block;
+    max-width: 100%;
+    max-height: 96vh;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 12px;
   }
   .lightbox-img .big-icon { width: 44px; height: 44px; color: var(--text-faint); }
 
@@ -855,7 +875,7 @@
     <!-- ===== 対戦相性タブ ===== -->
     <section class="screen" id="screen-h2h">
       <div class="section-label">対戦相手ごとの勝率</div>
-      <!-- <p class="h2h-intro">縦の選手が、横の相手に対してどれくらい勝っているかを表しています。色が濃いほど勝率が高いことを示します。</p> -->
+      <p class="h2h-intro">縦の選手が、横の相手に対してどれくらい勝っているかを表しています。色が濃いほど勝率が高いことを示します。</p>
       <div id="h2hGrid"></div>
       <div class="h2h-legend">
         <span>0%</span>
@@ -1350,8 +1370,12 @@
   function openLightbox(url, a, b, date) {
     const box = document.getElementById('lightboxImg');
     if (url) {
-      box.innerHTML = `<img src="${url}" alt="${a} vs ${b} スクリーンショット" style="width:100%;height:100%;object-fit:contain;border-radius:16px;">`;
+      box.classList.add('has-image');
+      box.classList.remove('empty');
+      box.innerHTML = `<img src="${url}" alt="${a} vs ${b} スクリーンショット">`;
     } else {
+      box.classList.remove('has-image');
+      box.classList.add('empty');
       box.innerHTML = `<span class="big-icon">${ICON.noImage}</span><span>この試合にはスクリーンショットが登録されていません</span>`;
     }
     document.getElementById('lightbox').classList.add('show');
