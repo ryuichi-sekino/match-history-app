@@ -1,0 +1,47 @@
+name: Match Reminder
+
+on:
+  schedule:
+    - cron: '0 9 * * 5'  # 毎週金曜 18:00 JST (= 09:00 UTC)
+  workflow_dispatch:      # GitHub画面から手動実行もできるようにする
+
+jobs:
+  check-and-notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 最終対戦日をチェックしてLINEに通知
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_GROUP_ID: ${{ secrets.LINE_GROUP_ID }}
+        run: |
+          SUPABASE_URL="https://pvfvysxlvhknxsxgwind.supabase.co"
+          SUPABASE_KEY="sb_publishable_y_rk7630u2k058s0f7dv5Q_SoiirfJe"
+
+          RESPONSE=$(curl -s "${SUPABASE_URL}/rest/v1/matches?select=date&order=date.desc&limit=1" \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}")
+
+          LAST_DATE=$(echo "$RESPONSE" | jq -r '.[0].date // empty')
+
+          if [ -z "$LAST_DATE" ]; then
+            DAYS_SINCE=999
+          else
+            LAST_EPOCH=$(date -d "$LAST_DATE" +%s)
+            TODAY_EPOCH=$(date -d "today" +%s)
+            DAYS_SINCE=$(( (TODAY_EPOCH - LAST_EPOCH) / 86400 ))
+          fi
+
+          echo "最終対戦日: ${LAST_DATE:-記録なし} / 経過日数: ${DAYS_SINCE}日"
+
+          if [ "$DAYS_SINCE" -ge 7 ]; then
+            echo "1週間以上更新が無いため通知を送信します"
+            MESSAGE=$'みんな、毎日お仕事お疲れ様🙌\n最近全然試合できてなくて寂しいよ…😢\n平日でも休日でも、都合が合うタイミングでパッと試合してリフレッシュしよ〜！🎮✨'
+            PAYLOAD=$(jq -n --arg to "$LINE_GROUP_ID" --arg text "$MESSAGE" \
+              '{to: $to, messages: [{type: "text", text: $text}]}')
+            curl -s -X POST https://api.line.me/v2/bot/message/push \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer ${LINE_CHANNEL_ACCESS_TOKEN}" \
+              -d "${PAYLOAD}"
+          else
+            echo "直近1週間以内に対戦記録があるため、通知はスキップします"
+          fi
