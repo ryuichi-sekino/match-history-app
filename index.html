@@ -904,6 +904,7 @@
         <select id="monthSelectH2H" class="month-select"></select>
       </div>
       <div class="section-label">対戦相手ごとの勝率</div>
+      <p class="h2h-intro">縦の選手が横の相手に対してどれくらい勝っているかを<br>表しています。<br>色が濃いほど勝率が高いことを示します。</p>
       <div id="h2hGrid"></div>
       <div class="h2h-legend">
         <span>0%</span>
@@ -1142,6 +1143,27 @@
         bScoreClass = bWin ? 'score-win' : aWin ? 'score-lose' : '';
       }
 
+      // 表示順(左右)を決定: 絞り込み中は選択中の人を右に、それ以外は勝者を左に(引き分けは登録順のまま)
+      let leftIsA;
+      if (isFocus) {
+        leftIsA = m.a !== activePlayer; // 選択中の人を常に右側にする
+      } else if (aWin) {
+        leftIsA = true;
+      } else if (bWin) {
+        leftIsA = false;
+      } else {
+        leftIsA = true;
+      }
+
+      const leftName = leftIsA ? m.a : m.b;
+      const rightName = leftIsA ? m.b : m.a;
+      const leftScore = leftIsA ? m.scoreA : m.scoreB;
+      const rightScore = leftIsA ? m.scoreB : m.scoreA;
+      const leftBlockClass = leftIsA ? aBlockClass : bBlockClass;
+      const rightBlockClass = leftIsA ? bBlockClass : aBlockClass;
+      const leftScoreClass = leftIsA ? aScoreClass : bScoreClass;
+      const rightScoreClass = leftIsA ? bScoreClass : aScoreClass;
+
       return `
       <div class="match-card">
         <div class="match-meta">
@@ -1154,18 +1176,18 @@
         </div>
         <div class="match-body">
           <div class="match-players">
-            <div class="player-block ${aBlockClass}">
-              <div class="player-avatar">${avatarHTML(m.a)}</div>
-              <div class="player-name">${m.a}</div>
+            <div class="player-block ${leftBlockClass}">
+              <div class="player-avatar">${avatarHTML(leftName)}</div>
+              <div class="player-name">${leftName}</div>
             </div>
             <div class="score-box">
-              <span class="${aScoreClass}">${m.scoreA}</span>
+              <span class="${leftScoreClass}">${leftScore}</span>
               <span class="dash">–</span>
-              <span class="${bScoreClass}">${m.scoreB}</span>
+              <span class="${rightScoreClass}">${rightScore}</span>
             </div>
-            <div class="player-block ${bBlockClass}">
-              <div class="player-avatar">${avatarHTML(m.b)}</div>
-              <div class="player-name">${m.b}</div>
+            <div class="player-block ${rightBlockClass}">
+              <div class="player-avatar">${avatarHTML(rightName)}</div>
+              <div class="player-name">${rightName}</div>
             </div>
           </div>
           <div class="thumb" onclick="openLightbox('${m.screenshotUrl || ''}', '${m.a}', '${m.b}', '${formatDate(m.date)}')">${m.screenshotUrl ? `<img src="${m.screenshotUrl}" alt="スクリーンショット" style="width:100%;height:100%;object-fit:cover;">` : '—'}</div>
@@ -1397,7 +1419,7 @@
     box.innerHTML = `<span class="icon">${ICON.camera}</span>タップして画像を選択`;
   }
   document.getElementById('fabBtn').addEventListener('click', () => {
-    document.getElementById('inputDate').valueAsDate = new Date();
+    document.getElementById('inputDate').value = toDateInputValue(new Date());
     document.getElementById('scoreA').value = 0;
     document.getElementById('scoreB').value = 0;
     resetUploadUI();
