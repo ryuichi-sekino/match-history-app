@@ -29,6 +29,12 @@
     --text-faint: #6B6252;
     --loss: #574F3C;
     --danger: #C24A2E;
+
+    /* リッチな質感用トークン */
+    --shadow-soft: 0 1px 2px rgba(0,0,0,0.35), 0 10px 28px -8px rgba(0,0,0,0.55);
+    --shadow-lift: 0 2px 4px rgba(0,0,0,0.4), 0 18px 40px -12px rgba(0,0,0,0.6);
+    --shadow-inset-top: inset 0 1px 0 rgba(255,255,255,0.06);
+    --gloss-overlay: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0) 55%);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,10 +61,33 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    background-image:
-      radial-gradient(circle at 15% 0%, rgba(228,121,60,0.08), transparent 45%),
-      radial-gradient(circle at 100% 15%, rgba(111,169,111,0.08), transparent 40%);
   }
+
+  .app::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+      radial-gradient(circle at 12% 0%, rgba(228,121,60,0.14), transparent 42%),
+      radial-gradient(circle at 100% 18%, rgba(111,169,111,0.12), transparent 38%),
+      radial-gradient(circle at 50% 100%, rgba(228,121,60,0.06), transparent 50%);
+    animation: ambientDrift 22s ease-in-out infinite alternate;
+  }
+
+  @keyframes ambientDrift {
+    0%   { opacity: 0.85; transform: translate3d(0, 0, 0) scale(1); }
+    50%  { opacity: 1;    transform: translate3d(-1.5%, 1%, 0) scale(1.04); }
+    100% { opacity: 0.9;  transform: translate3d(1.5%, -1%, 0) scale(1.02); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .app::before { animation: none; }
+    .match-card, .fab, .save-btn, .chip { transition: none; }
+  }
+
+  .app > * { position: relative; z-index: 1; }
 
   /* ---------- Header ---------- */
   header {
@@ -110,19 +139,31 @@
 
   .podium-card {
     flex: 1;
-    background: var(--surface);
+    background: linear-gradient(165deg, var(--surface-hover), var(--surface) 70%);
     border: 1px solid var(--line);
     border-radius: 16px;
     padding: 14px 10px 12px;
     text-align: center;
     position: relative;
+    box-shadow: var(--shadow-soft), var(--shadow-inset-top);
+    overflow: hidden;
+  }
+
+  .podium-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 45%;
+    background: var(--gloss-overlay);
+    pointer-events: none;
   }
 
   .podium-card.first {
-    background: linear-gradient(180deg, rgba(111,169,111,0.18), var(--surface) 60%);
+    background: linear-gradient(165deg, rgba(111,169,111,0.22), var(--surface-hover) 55%, var(--surface) 80%);
     border-color: var(--green-dim);
     transform: translateY(-10px);
     padding-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 20px 36px -10px rgba(111,169,111,0.28), var(--shadow-inset-top);
   }
 
   .podium-rank {
@@ -138,13 +179,14 @@
     width: 44px; height: 44px;
     border-radius: 50%;
     margin: 8px auto 8px;
-    background: var(--bg-elevated);
+    background: radial-gradient(circle at 35% 25%, var(--surface-hover), var(--bg-elevated) 70%);
     border: 2px solid var(--line);
     display: flex; align-items: center; justify-content: center;
     font-weight: 800; font-size: 12px;
     letter-spacing: -0.5px;
     color: var(--text-dim);
       overflow: hidden;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 3px 8px rgba(0,0,0,0.35);
   }
 
   .podium-card.first .podium-avatar {
@@ -208,10 +250,11 @@
   }
 
   .stat-table {
-    background: var(--surface);
+    background: linear-gradient(165deg, var(--surface-hover), var(--surface) 70%);
     border: 1px solid var(--line);
     border-radius: 14px;
     overflow: hidden;
+    box-shadow: var(--shadow-soft), var(--shadow-inset-top);
   }
 
   .stat-row {
@@ -255,7 +298,7 @@
 
   .chip {
     flex-shrink: 0;
-    background: var(--surface);
+    background: linear-gradient(165deg, var(--surface-hover), var(--surface));
     border: 1px solid var(--line);
     color: var(--text-dim);
     font-size: 12.5px;
@@ -264,11 +307,15 @@
     border-radius: 999px;
     cursor: pointer;
     white-space: nowrap;
+    box-shadow: var(--shadow-inset-top), 0 1px 3px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease;
   }
+  .chip:active { transform: scale(0.96); }
   .chip.active {
-    background: linear-gradient(160deg, #EF9862, var(--orange));
+    background: linear-gradient(160deg, #EF9862, var(--orange) 60%, #C25F2C);
     border-color: transparent;
     color: #1C0D06;
+    box-shadow: 0 4px 12px rgba(228,121,60,0.35), inset 0 1px 1px rgba(255,255,255,0.35);
   }
 
   .date-filter-row {
@@ -306,12 +353,28 @@
   .date-filter-row .reset-btn svg { width: 14px; height: 14px; }
 
   .match-card {
-    background: var(--surface);
+    background: linear-gradient(165deg, var(--surface-hover), var(--surface) 65%);
     border: 1px solid var(--line);
     border-radius: 16px;
     padding: 14px;
     margin-bottom: 12px;
     position: relative;
+    box-shadow: var(--shadow-soft), var(--shadow-inset-top);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .match-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 40%;
+    background: var(--gloss-overlay);
+    pointer-events: none;
+  }
+
+  .match-card:active {
+    transform: scale(0.99);
   }
 
   .match-meta {
@@ -364,11 +427,12 @@
   .player-avatar {
     width: 34px; height: 34px;
     border-radius: 50%;
-    background: var(--bg-elevated);
+    background: radial-gradient(circle at 35% 25%, var(--surface-hover), var(--bg-elevated) 70%);
     border: 1.5px solid var(--line);
     display: flex; align-items: center; justify-content: center;
     font-size: 10px; font-weight: 800; letter-spacing: -0.4px; color: var(--text-dim);
       overflow: hidden;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.08), 0 2px 6px rgba(0,0,0,0.3);
   }
   .player-block.winner .player-avatar {
     border-color: var(--green);
@@ -511,6 +575,7 @@
     align-items: center;
     justify-content: center;
     font-variant-numeric: tabular-nums;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 1px 3px rgba(0,0,0,0.25);
   }
 
   .h2h-head {
@@ -607,9 +672,11 @@
     bottom: 0;
     width: 100%;
     max-width: 480px;
-    background: rgba(19,18,13,0.92);
-    backdrop-filter: blur(14px);
+    background: rgba(19,18,13,0.85);
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
     border-top: 1px solid var(--line);
+    box-shadow: var(--shadow-inset-top), 0 -12px 32px rgba(0,0,0,0.35);
     display: flex;
     padding: 8px 12px calc(10px + env(safe-area-inset-bottom));
     z-index: 20;
@@ -651,16 +718,30 @@
     bottom: 0;
     width: 56px; height: 56px;
     border-radius: 50%;
-    background: linear-gradient(160deg, #EF9862, var(--orange));
+    background: linear-gradient(160deg, #EF9862, var(--orange) 55%, #C25F2C);
     border: none;
     color: #1C0D06;
     font-weight: 700;
-    box-shadow: 0 8px 22px rgba(228,121,60,0.35), 0 2px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 22px rgba(228,121,60,0.4), 0 2px 6px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.35), inset 0 -3px 6px rgba(0,0,0,0.15);
     display: flex; align-items: center; justify-content: center;
     pointer-events: auto;
     cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .fab svg { width: 24px; height: 24px; }
+  .fab::before {
+    content: "";
+    position: absolute;
+    top: 4px; left: 8px; right: 8px;
+    height: 40%;
+    border-radius: 50% / 60%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.55), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .fab:active {
+    transform: scale(0.94);
+    box-shadow: 0 4px 12px rgba(228,121,60,0.35), inset 0 1px 1px rgba(255,255,255,0.25);
+  }
+  .fab svg { width: 24px; height: 24px; position: relative; z-index: 1; }
 
   /* ---------- Sheet (new match form) ---------- */
   .overlay {
@@ -679,7 +760,7 @@
   .sheet {
     width: 100%;
     max-width: 480px;
-    background: var(--bg-elevated);
+    background: linear-gradient(180deg, var(--surface-hover), var(--bg-elevated) 30%);
     border-radius: 22px 22px 0 0;
     align-self: flex-end;
     padding: 10px 20px calc(24px + env(safe-area-inset-bottom));
@@ -688,6 +769,7 @@
     max-height: 88vh;
     overflow-y: auto;
     border-top: 1px solid var(--line);
+    box-shadow: var(--shadow-inset-top), 0 -20px 50px rgba(0,0,0,0.45);
   }
   .overlay.show .sheet { transform: translateY(0); }
 
@@ -716,7 +798,7 @@
   .field input[type="date"],
   .field select {
     width: 100%;
-    background: var(--surface);
+    background: linear-gradient(180deg, var(--bg-elevated), var(--surface));
     border: 1px solid var(--line);
     border-radius: 10px;
     color: var(--text);
@@ -724,6 +806,7 @@
     font-size: 14px;
     font-family: inherit;
     appearance: none;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
   }
 
   .field select {
@@ -797,7 +880,7 @@
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
-    background: linear-gradient(160deg, #EF9862, var(--orange));
+    background: linear-gradient(160deg, #EF9862, var(--orange) 60%, #C25F2C);
     border: none;
     border-radius: 12px;
     padding: 14px;
@@ -806,7 +889,20 @@
     color: #1C0D06;
     margin-top: 6px;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(228,121,60,0.3), inset 0 1px 1px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.12);
+    transition: transform 0.15s ease;
   }
+  .save-btn::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), rgba(255,255,255,0));
+    pointer-events: none;
+  }
+  .save-btn:active { transform: scale(0.98); }
 
   .cancel-link {
     display: block;
@@ -1146,7 +1242,7 @@
       // 表示順(左右)を決定: 絞り込み中は選択中の人を右に、それ以外は勝者を左に(引き分けは登録順のまま)
       let leftIsA;
       if (isFocus) {
-        leftIsA = m.a !== activePlayer; // 選択中の人を常に右側にする
+        leftIsA = m.a === activePlayer; // 選択中の人を常に左側にする
       } else if (aWin) {
         leftIsA = true;
       } else if (bWin) {
